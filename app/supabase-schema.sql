@@ -34,7 +34,7 @@ CREATE TABLE ideas (
   target_audience TEXT DEFAULT '',
   key_points JSONB DEFAULT '[]',
   cta_strategy TEXT DEFAULT '',
-  references JSONB DEFAULT '[]',
+  refs JSONB DEFAULT '[]',
   source TEXT DEFAULT 'manual',
   source_data JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT now(),
