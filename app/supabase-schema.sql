@@ -251,3 +251,42 @@ CREATE POLICY "Allow all" ON voice_profiles FOR ALL USING (true) WITH CHECK (tru
 CREATE POLICY "Allow all" ON agent_runs FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all" ON script_versions FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all" ON ctas FOR ALL USING (true) WITH CHECK (true);
+
+-- Agent Status (real-time live tracking for Mission Control)
+CREATE TABLE agent_status (
+  agent_id TEXT PRIMARY KEY,
+  status TEXT DEFAULT 'idle',
+  current_task TEXT DEFAULT '',
+  detail TEXT DEFAULT '',
+  metric TEXT DEFAULT '',
+  progress INT DEFAULT 0,
+  last_active_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Agent Activity Logs
+CREATE TABLE agent_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  agent_id TEXT NOT NULL,
+  action TEXT NOT NULL,
+  detail TEXT DEFAULT '',
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_agent_logs_created ON agent_logs(created_at DESC);
+CREATE INDEX idx_agent_logs_agent ON agent_logs(agent_id);
+
+-- Seed agents
+INSERT INTO agent_status (agent_id, status, detail, metric) VALUES
+  ('scout', 'idle', 'Awaiting orders', '0 scans today'),
+  ('voice', 'idle', 'Ready', 'No profiles trained'),
+  ('writer', 'idle', 'No scripts in queue', '0 drafts today'),
+  ('editor', 'idle', 'No briefs pending', '0 briefs today'),
+  ('critic', 'idle', 'Waiting for content', '0 reviews today'),
+  ('calendar', 'idle', 'Schedule clear', 'This week: 0/3');
+
+ALTER TABLE agent_status ENABLE ROW LEVEL SECURITY;
+ALTER TABLE agent_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all" ON agent_status FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all" ON agent_logs FOR ALL USING (true) WITH CHECK (true);
