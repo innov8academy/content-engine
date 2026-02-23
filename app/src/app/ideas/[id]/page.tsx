@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, PenTool, Sparkles, TrendingUp, Target, Users, Lightbulb, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { use } from "react";
 
 const channelMap: Record<string, { name: string; handle: string; color: string }> = {
@@ -40,6 +41,8 @@ export default function IdeaDetailPage({ params }: { params: Promise<{ id: strin
   const { id } = use(params);
   const [idea, setIdea] = useState<Idea | null>(null);
   const [loading, setLoading] = useState(true);
+  const [scripting, setScripting] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchIdea() {
@@ -95,9 +98,33 @@ export default function IdeaDetailPage({ params }: { params: Promise<{ id: strin
           </div>
           <h1 className="text-xl font-bold">{idea.title}</h1>
         </div>
-        <Button className="gap-1 bg-gradient-to-r from-blue-500 to-violet-500">
-          <PenTool className="h-3.5 w-3.5" />
-          Script This
+        <Button
+          className="gap-1 bg-gradient-to-r from-blue-500 to-violet-500"
+          disabled={scripting}
+          onClick={async () => {
+            setScripting(true);
+            try {
+              const res = await fetch('/api/scripts/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ideaId: idea.id, template: 'tool-review' }),
+              });
+              const data = await res.json();
+              if (data.script) {
+                router.push(`/scripts/${data.script.id}`);
+              }
+            } catch (e) {
+              console.error(e);
+            } finally {
+              setScripting(false);
+            }
+          }}
+        >
+          {scripting ? (
+            <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Writing Script...</>
+          ) : (
+            <><PenTool className="h-3.5 w-3.5" /> Script This</>
+          )}
         </Button>
       </div>
 
