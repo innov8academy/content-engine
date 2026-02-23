@@ -1,1 +1,3 @@
 node_modules\n.next\n.env.local\n.env
+agents/orchestrator/TOOLS.md
+agents/supabase.sh
